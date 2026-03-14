@@ -26,15 +26,16 @@ async function pollDeliveries() {
     
     logger.info(`Polling: Found ${pending.length} new deliveries.`);
 
-    // PRE-FETCH Suppliers from Guardian to match for the 30% split
+    // PRE-FETCH Suppliers from Google Sheets (Source of Truth for transfers after Sync)
     let suppliersCount = 0;
-    let guardianSuppliers = [];
+    let sheetSuppliers = [];
     try {
-        guardianSuppliers = await getSuppliers();
-        suppliersCount = guardianSuppliers.length;
-        logger.info(`Guardian: Found ${suppliersCount} suppliers in policy.`);
+        const { getSupplierRows } = require('../services/sheets.service');
+        sheetSuppliers = await getSupplierRows();
+        suppliersCount = sheetSuppliers.length;
+        logger.info(`Google Sheets: Found ${suppliersCount} suppliers in DB.`);
     } catch (sErr) {
-        logger.warn(`Guardian: Could not fetch suppliers list for splitting.`);
+        logger.warn(`Google Sheets: Could not fetch suppliers list for splitting.`);
     }
 
     for (const entrega of pending) {
@@ -55,6 +56,22 @@ async function pollDeliveries() {
       const reward = calculateEggocoins(entrega);
       const totalPoints = reward.eggocoins;
       
+      // Look up supplier using exact short code or partial match
+      const matchedSupplier = sheetSuppliers.find(s => 
+          s.activo && (
+            (s.codigo_corto && String(s.codigo_corto).toLowerCase() === String(entrega.supplier_id).toLowerCase()) ||
+            String(s.supplier_id).toLowerCase().includes(String(entrega.supplier_id).toLowerCase())
+          )
+      );
+
+      // Mutate the delivery object to use the actual long ID from the Supplier DB before sending to Guardian
+      if (matchedSupplier) {
+          entrega.supplier_id = matchedSupplier.supplier_id; // Set to full Guardian name
+          entrega.supplier_wallet = matchedSupplier.wallet_destino;
+      } else {
+          logger.warn(`No active supplier found matching '${entrega.supplier_id}'. Using as is.`);
+      }
+
       // 1. Guardian Submission (Automation triggers MINT on MGS)
       logger.info(`Submitting VC to Guardian...`);
       let guardianSyncStatus = 'FAILED';
@@ -75,22 +92,18 @@ async function pollDeliveries() {
       // 2. 30% Transfer to Supplier (secondary operation)
       let shareInfo = { amount: 0, wallet: 'None', txId: 'N/A' };
       try {
-        const supplier = guardianSuppliers.find(s => 
-          String(s.nombre).toLowerCase().includes(String(entrega.supplier_id).toLowerCase())
-        );
-
-        if (supplier && supplier.wallet && supplier.wallet.startsWith('0.0.')) {
+        if (matchedSupplier && matchedSupplier.wallet_destino && matchedSupplier.wallet_destino.startsWith('0.0.')) {
           const supplierShare = Math.round(totalPoints * 0.30 * 100) / 100;
           
           // Wait 5 seconds for Guardian's automated minting to reflect in balance
           logger.info(`Waiting for mint finality before 30% transfer...`);
           await new Promise(r => setTimeout(r, 5000));
           
-          logger.info(`HTS: Transferring ${supplierShare} EGGO to supplier ${supplier.wallet}...`);
-          const transferRes = await transferEggocoins(supplier.wallet, supplierShare);
-          shareInfo = { amount: supplierShare, wallet: supplier.wallet, txId: transferRes.txId };
+          logger.info(`HTS: Transferring ${supplierShare} EGGO to supplier ${matchedSupplier.wallet_destino}...`);
+          const transferRes = await transferEggocoins(matchedSupplier.wallet_destino, supplierShare);
+          shareInfo = { amount: supplierShare, wallet: matchedSupplier.wallet_destino, txId: transferRes.txId };
         } else {
-          logger.warn(`HTS Split: No registered wallet found for supplier ID: ${entrega.supplier_id}`);
+          logger.warn(`HTS Split: No registered wallet found in Sheets for supplier ID: ${entrega.supplier_id}`);
         }
       } catch (tErr) {
         logger.error(`HTS Transfer Error: ${tErr.message}`);
@@ -118,6 +131,7 @@ async function pollDeliveries() {
       await updateDeliveryRow(entrega._rowNumber, {
         hts_mint_tx: 'GUARDIAN_SYNC',
         hcs_tx: hcsTxId,
+        transfer_tx: shareInfo.txId,
         kg_netos: reward.kg_netos,
         Eggocoin: totalPoints
       });

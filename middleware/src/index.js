@@ -6,6 +6,7 @@ const { initHederaClient } = require('./config/hedera');
 const { pollDeliveries } = require('./jobs/poll-deliveries');
 const { processBatches } = require('./jobs/process-batches');
 const { checkCarbonThreshold } = require('./jobs/carbon-accumulator');
+const { syncSuppliers } = require('./jobs/sync-suppliers');
 const webhookRoutes = require('./routes/webhook.routes');
 const supplierRoutes = require('./routes/supplier.routes');
 const dashboardRoutes = require('./routes/dashboard.routes');
@@ -43,17 +44,27 @@ cron.schedule('0 18 * * 5', async () => {
   await processBatches();
 });
 
+cron.schedule(`*/10 * * * *`, async () => {
+  logger.info('Syncing suppliers...');
+  await syncSuppliers();
+});
+
 cron.schedule('0 * * * *', async () => {
   await checkCarbonThreshold();
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   logger.info(`Eggologic middleware running on port ${PORT}`);
   logger.info(`Polling Google Sheets every ${interval} minutes`);
   
   // Initial run
-  pollDeliveries().catch(err => logger.error(`Initial poll failed: ${err.message}`));
+  try {
+    await syncSuppliers();
+    await pollDeliveries();
+  } catch (err) {
+    logger.error(`Initial poll/sync failed: ${err.message}`);
+  }
 });
 
 module.exports = app;

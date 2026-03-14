@@ -66,7 +66,7 @@ const App = () => {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 30000); // Polling every 30s
+    const interval = setInterval(fetchData, 5000); // Polling every 5s
     return () => clearInterval(interval);
   }, []);
 
@@ -179,10 +179,10 @@ const App = () => {
             <div className="absolute -bottom-6 -right-6 p-4 opacity-10 group-hover:opacity-30 transition-all rotate-12">
               <BarChart3 className="w-40 h-40 text-primary" />
             </div>
-            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Carbon / Offset Progress</p>
+            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-4">Waste Diversion Progress</p>
             <div className="flex items-baseline gap-2">
               <h2 className="text-5xl font-black">{stats.carbon_total_accumulated}</h2>
-              <span className="text-slate-400 font-medium">kg CO2e Avoided</span>
+              <span className="text-slate-400 font-medium">kg of Waste Diverted</span>
             </div>
             <div className="mt-8 space-y-3">
               <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden border border-slate-700 p-1">
@@ -243,23 +243,33 @@ const App = () => {
                           )}>
                             Grade {d.grade}
                           </span>
-                          <div className="flex gap-2 text-[9px] font-bold">
+                          <div className="flex gap-2 text-[9px] font-bold mt-1">
+                            {d.hts_mint_tx && (
+                              <span
+                                className="text-green-600 flex items-center gap-0.5 border border-green-200 bg-green-50 px-1.5 py-0.5 rounded"
+                                title="Minted via Guardian"
+                              >
+                                VC MINT <CheckCircle2 className="w-2 h-2" />
+                              </span>
+                            )}
                             {d.hcs_tx && (
                               <a
                                 href={`https://hashscan.io/testnet/transaction/${d.hcs_tx}`}
                                 target="_blank" rel="noreferrer"
-                                className="text-slate-400 hover:text-primary flex items-center gap-0.5"
+                                className="text-slate-500 hover:text-primary flex items-center gap-0.5 border border-slate-200 px-1.5 py-0.5 rounded"
+                                title="Delivery Audit Log"
                               >
-                                HCS <ExternalLink className="w-2 h-2" />
+                                HCS AUDIT <ExternalLink className="w-2 h-2" />
                               </a>
                             )}
-                            {d.hts_mint_tx && (
+                            {d.transfer_tx && (
                               <a
-                                href={`https://hashscan.io/testnet/transaction/${d.hts_mint_tx}`}
+                                href={`https://hashscan.io/testnet/transaction/${d.transfer_tx}`}
                                 target="_blank" rel="noreferrer"
-                                className="text-slate-400 hover:text-green-600 flex items-center gap-0.5"
+                                className="text-indigo-500 hover:text-indigo-700 flex items-center gap-0.5 border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 rounded"
+                                title="Treasury 30% Transfer"
                               >
-                                HTS <ExternalLink className="w-2 h-2" />
+                                HTS SPLIT <ExternalLink className="w-2 h-2" />
                               </a>
                             )}
                           </div>

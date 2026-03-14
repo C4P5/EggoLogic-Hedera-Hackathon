@@ -25,6 +25,7 @@ const normalizeDeliveryRow = (row) => {
     coins: Number(row.Eggocoin) || Number(row.eggocoins_earned) || calculated.eggocoins || 0,
     hcs_tx: row.hcs_tx || null,
     hts_mint_tx: row.hts_mint_tx || null,
+    transfer_tx: row.transfer_tx || null,
   };
 };
 
@@ -32,9 +33,11 @@ async function getCurrentDeliveries() {
   try {
     const rows = await getDeliveryRows();
     if (rows && rows.length > 0) {
-      return rows
+      const filtered = rows
         .map(normalizeDeliveryRow)
-        .filter(d => d.provider && d.date); // Filter out empty template rows
+        .filter(d => d.provider && d.date && d.hcs_tx && d.hcs_tx !== ''); // Filter valid audited rows
+        
+      return filtered.reverse(); // Newest first
     }
   } catch (err) {
     // Fallback to demo deliveries

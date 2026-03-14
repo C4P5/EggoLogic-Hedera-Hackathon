@@ -30,32 +30,46 @@ async function getDoc(readOnly = true) {
   }
 }
 
+async function getSupplierDoc() {
+  if (!config.google.supplierSpreadsheetId) return null;
+
+  try {
+    const auth = new JWT({
+      email: config.google.serviceAccountEmail,
+      key: config.google.privateKey,
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+        'https://www.googleapis.com/auth/drive.file'
+      ],
+    });
+    const doc = new GoogleSpreadsheet(config.google.supplierSpreadsheetId, auth);
+    await doc.loadInfo();
+    return doc;
+  } catch (err) {
+    logger.error(`Google Sheets supplier doc connection error: ${err.message}`);
+    return null;
+  }
+}
+
 function mapRowToEntrega(row) {
-  const kgBruto = parseFloat(row.get('kg_brutos') || row.get('Peso Bruto (kg)') || row.get('kg_bruto') || '0') || 0;
-  const kgNeto = parseFloat(row.get('kg_netos') || row.get('Peso Neto (kg)') || row.get('kg_neto') || '0') || 0;
-  const tara = parseFloat(row.get('Tara (kg)') || '0') || 0;
+  const kgBruto = parseFloat(row.get('kg_brutos') || '0') || 0;
   const pctImpropios = parseFloat(row.get('pct_impropios') || '0') || 0;
 
   return {
-    supplier_id: row.get('supplier_id') || row.get('Proveedor') || row.get('proveedor_id'),
-    Fecha: row.get('Fecha') || row.get('fecha'),
+    supplier_id: row.get('supplier_id') || '',
+    Fecha: row.get('Fecha') || '',
     kg_brutos: kgBruto,
     pct_impropios: pctImpropios,
     destination: row.get('destination') || 'Plant',
-    kg_netos: kgNeto || (kgBruto - tara),
+    kg_netos: parseFloat(row.get('kg_netos') || '0') || kgBruto,
     Eggocoin: parseFloat(row.get('Eggocoin') || '0'),
-    kg_ajustados_cert: parseFloat(row.get('kg_ajustados_cert') || '0'),
-    Foto: row.get('Foto') || row.get('foto'),
-
-    eggo_entrega_date: row.get('Fecha') || row.get('fecha'),
-    eggo_entrega_supplier_ref: row.get('supplier_id') || row.get('Proveedor'),
-    eggo_entrega_kg_bruto: kgBruto,
-    eggo_entrega_kg_neto: kgNeto || (kgBruto - tara),
-    eggo_entrega_waste_type: mapWasteType(row.get('Tipo de Residuo') || row.get('tipo_residuo') || 'organico'),
-    eggo_entrega_period: row.get('Semana') || row.get('periodo') || '',
-    delivery_id: row.get('delivery_id') || row.get('ID') || '',
+    Foto: row.get('Foto') || '',
+    waste_type: mapWasteType(row.get('Tipo de Residuo') || 'organico'),
+    Semana: row.get('Semana') || '',
+    delivery_id: row.get('delivery_id') || '',
     hts_mint_tx: row.get('hts_mint_tx') || '',
     hcs_tx: row.get('hcs_tx') || '',
+    transfer_tx: row.get('transfer_tx') || '',
     _rowNumber: row.rowNumber,
   };
 }
@@ -82,7 +96,10 @@ async function getDeliveryRows() {
   const sheet = document.sheetsByTitle['Entregas'] || document.sheetsByTitle['ENTREGAS'];
   if (!sheet) return [];
   const rows = await sheet.getRows();
-  return rows.map(mapRowToEntrega);
+  
+  return rows
+    .map(mapRowToEntrega)
+    .filter(r => r.supplier_id && r.supplier_id.trim() !== '' && r.kg_brutos > 0);
 }
 
 async function addDeliveryRow(data) {
@@ -103,7 +120,10 @@ async function addDeliveryRow(data) {
       Foto: data.Foto || '',
       Semana: data.Semana || `W${getWeekNumber(new Date())}`,
       'Tipo de Residuo': data.waste_type || 'organico',
-      delivery_id: data.delivery_id || data.external_id || `${data.supplier_id || 'unkn'}_${new Date().getTime()}`
+      delivery_id: data.delivery_id || data.external_id || `${data.supplier_id || 'unkn'}_${new Date().getTime()}`,
+      hts_mint_tx: '',
+      hcs_tx: '',
+      transfer_tx: ''
     });
     return row;
   } catch (err) {
@@ -146,11 +166,92 @@ async function getDeliveryRowCount() {
   return rows.length;
 }
 
+async function getSupplierRows() {
+  const doc = await getSupplierDoc();
+  if (!doc) return [];
+  const sheet = doc.sheetsByIndex[0];
+  if (!sheet) return [];
+  const rows = await sheet.getRows();
+  return rows.map(r => ({
+    Id: r.get('Id'),
+    Issuer: r.get('Issuer'),
+    'Issuance Date': r.get('Issuance Date'),
+    Proof: r.get('Proof'),
+    supplier_id: r.get('supplier_id'),
+    wallet_destino: r.get('wallet_destino'),
+    contacto: r.get('contacto'),
+    ubicacion: r.get('ubicacion'),
+    activo: r.get('activo') === 'TRUE' || r.get('activo') === 'true',
+    codigo_corto: r.get('codigo_corto') || r.get('codigo') || r.get('short') || '',
+    _rowNumber: r.rowNumber
+  }));
+}
+
+async function addOrUpdateSupplierRow(supplierData) {
+  const doc = await getSupplierDoc();
+  if (!doc) return null;
+  const sheet = doc.sheetsByIndex[0];
+  if (!sheet) return null;
+
+  try {
+    const rows = await sheet.getRows();
+    const existing = rows.find(r => r.get('Id') === supplierData.id || r.get('supplier_id') === supplierData.nombre);
+    
+    if (existing) {
+      existing.set('Id', supplierData.id || existing.get('Id'));
+      existing.set('supplier_id', supplierData.nombre || existing.get('supplier_id'));
+      existing.set('wallet_destino', supplierData.wallet || existing.get('wallet_destino'));
+      existing.set('activo', 'TRUE'); // mark active
+      
+      // Assign code if missing
+      if (!existing.get('codigo_corto') && !existing.get('codigo') && !existing.get('short')) {
+         let nextCodeInt = rows.length + 1;
+         let newCode = `P${String(nextCodeInt).padStart(2, '0')}`;
+         while(rows.find(r => (r.get('codigo_corto') || r.get('codigo') || r.get('short')) === newCode)) {
+           nextCodeInt++;
+           newCode = `P${String(nextCodeInt).padStart(2, '0')}`;
+         }
+         existing.set('codigo_corto', newCode);
+      }
+      
+      await existing.save();
+      return existing;
+    } else {
+      let nextCodeInt = rows.length + 1;
+      let newCode = `P${String(nextCodeInt).padStart(2, '0')}`;
+      while(rows.find(r => (r.get('codigo_corto') || r.get('codigo') || r.get('short')) === newCode)) {
+        nextCodeInt++;
+        newCode = `P${String(nextCodeInt).padStart(2, '0')}`;
+      }
+
+      const row = await sheet.addRow({
+        Id: supplierData.id,
+        Issuer: 'Guardian',
+        'Issuance Date': new Date().toISOString(),
+        Proof: 'VC',
+        supplier_id: supplierData.nombre,
+        wallet_destino: supplierData.wallet,
+        contacto: '',
+        ubicacion: '',
+        activo: 'TRUE',
+        codigo_corto: newCode
+      });
+      return row;
+    }
+  } catch (err) {
+    logger.error(`Error adding/updating supplier row: ${err.message}`);
+    throw err;
+  }
+}
+
 module.exports = {
   getDoc,
+  getSupplierDoc,
   getDeliveryRows,
   addDeliveryRow,
   updateDeliveryRow,
   getDeliveryRowCount,
-  getNewDeliveries
+  getNewDeliveries,
+  getSupplierRows,
+  addOrUpdateSupplierRow
 };

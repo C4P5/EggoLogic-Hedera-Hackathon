@@ -34,7 +34,7 @@ async function processOperatorInput(text, mediaFiles = []) {
       
       Debes devolver un JSON con esta estructura exacta:
       {
-        "supplier_id": "Nombre del proveedor",
+        "supplier_id": "Nombre del proveedor o Código Corto (ej: P01, P02, C01)",
         "kg_brutos": 123.45,
         "pct_impropios": 0.1, 
         "waste_type": "organico",

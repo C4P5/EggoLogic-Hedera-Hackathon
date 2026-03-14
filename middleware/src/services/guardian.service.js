@@ -62,7 +62,10 @@ async function getSuppliers() {
     const suppliers = results
       .filter(doc => {
         const d = doc.document || doc;
-        return d.credentialSubject && d.credentialSubject[0].field2;
+        if (!d.credentialSubject || !d.credentialSubject[0] || !d.credentialSubject[0].field2) return false;
+        // The Provider VC schema only has up to field4/field5. The Delivery schema has field0-field7.
+        // Differentiate them by ensuring field6 or field7 is undefined.
+        return d.credentialSubject[0].field7 === undefined;
       })
       .map(doc => {
         const d = doc.document || doc;
