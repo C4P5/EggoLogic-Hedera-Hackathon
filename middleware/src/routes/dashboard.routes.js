@@ -3,6 +3,7 @@ const router = express.Router();
 const { DEMO_DELIVERIES } = require('../data/demo-data');
 const { getDeliveryRows } = require('../services/sheets.service');
 const config = require('../config/env');
+const logger = require('../utils/logger');
 
 const { calculateEggocoins } = require('../services/points.service');
 const { getQualityGrade } = require('../utils/validators');

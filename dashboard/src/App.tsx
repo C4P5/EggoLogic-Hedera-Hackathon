@@ -1,10 +1,21 @@
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import SummaryCards from './components/SummaryCards'
 import DeliveriesTable from './components/DeliveriesTable'
 import CarbonCoinProgress from './components/CarbonCoinProgress'
+import NewDeliveryForm from './components/NewDeliveryForm'
 import { deliveries, summary } from './data'
 
 export default function App() {
+  const [token, setToken] = useState<string | null>(localStorage.getItem('eggo_session_token'))
+
+  useEffect(() => {
+    const handleAuthChange = () => {
+       setToken(localStorage.getItem('eggo_session_token'))
+    }
+    window.addEventListener('auth_changed', handleAuthChange)
+    return () => window.removeEventListener('auth_changed', handleAuthChange)
+  }, [])
   return (
     <div className="min-h-screen bg-eggo-bg">
       <Header />
@@ -19,6 +30,7 @@ export default function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
+            <NewDeliveryForm token={token} />
             <DeliveriesTable deliveries={deliveries} />
           </div>
           <div>

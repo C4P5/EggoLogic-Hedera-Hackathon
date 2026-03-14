@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
+import NewDeliveryForm from './components/NewDeliveryForm';
 import {
   Wallet,
   Recycle,
@@ -27,6 +29,54 @@ const App = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Auth State
+  const [showModal, setShowModal] = useState(false);
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [googleUser, setGoogleUser] = useState(null);
+  const [authError, setAuthError] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('eggo_session_token'));
+
+  useEffect(() => {
+     const savedToken = localStorage.getItem('eggo_session_token');
+     const email = localStorage.getItem('eggo_user_email');
+     if (savedToken && email) {
+        setGoogleUser({ email });
+        setToken(savedToken);
+     }
+  }, []);
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+      setAuthError('');
+      try {
+          const res = await fetch('/api/auth/google', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ credential: credentialResponse.credential })
+          });
+          const data = await res.json();
+          
+          if (res.ok) {
+              setGoogleUser(data.user);
+              setToken(data.token);
+              localStorage.setItem('eggo_session_token', data.token);
+              localStorage.setItem('eggo_user_email', data.user.email);
+              setShowModal(false);
+          } else {
+              setAuthError(data.error || 'Autenticación fallida');
+          }
+      } catch (err) {
+          setAuthError('Error conectando con el servidor');
+      }
+  };
+
+  const handleLogout = () => {
+      setWalletConnected(false);
+      setGoogleUser(null);
+      setToken(null);
+      localStorage.removeItem('eggo_session_token');
+      localStorage.removeItem('eggo_user_email');
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,17 +183,90 @@ const App = () => {
 
         <div className="flex items-center gap-4">
           {loading && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
-          <div className="flex flex-col items-end">
+          
+          <div className="hidden md:flex flex-col items-end mr-2">
             <div className="flex items-center gap-2 px-4 py-1.5 rounded-full font-bold bg-white border border-slate-200 text-slate-700 shadow-sm text-[10px]">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              Hedera Account: 0.0.7166777
+              Network: Testnet
             </div>
-            <div className="text-[8px] font-black text-slate-400 mt-1 uppercase tracking-tighter">
-              Topic: 0.0.1960
-            </div>
+          </div>
+
+          <div>
+              {googleUser ? (
+                  <div className="flex items-center gap-3">
+                      <span className="text-xs text-slate-600 font-bold">{googleUser.email}</span>
+                      <button onClick={handleLogout} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors">Log Out</button>
+                  </div>
+              ) : walletConnected ? (
+                  <button onClick={handleLogout} className="flex flex-col items-end group cursor-pointer text-left">
+                      <div className="flex items-center gap-2 px-4 py-1.5 rounded-full font-bold bg-primary/10 border border-primary/30 text-primary shadow-sm text-[10px] group-hover:bg-primary/20 transition-colors">
+                          <Wallet className="w-3 h-3" />
+                          0.0.7166777
+                      </div>
+                  </button>
+              ) : (
+                  <button
+                  onClick={() => setShowModal(true)}
+                  className="flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-black transition-all cursor-pointer bg-primary text-white hover:bg-green-600 shadow-md shadow-green-200"
+                  >
+                  Log In
+                  </button>
+              )}
           </div>
         </div>
       </header>
+      
+      {showModal && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden border border-slate-100 relative slide-up">
+                  <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full">
+                      X
+                  </button>
+                  <div className="p-8 text-center space-y-6">
+                      <div className="w-16 h-16 rounded-2xl bg-primary/10 mx-auto flex items-center justify-center text-primary">
+                          <Wallet className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-black tracking-tight text-slate-800 mb-2">Welcome Access</h2>
+                        <p className="text-xs text-slate-500 font-medium">Choose your authentication method to participate in the EggoLogic Network.</p>
+                      </div>
+                      
+                      {authError && (
+                          <div className="p-3 bg-red-50 text-red-600 text-xs font-bold rounded-xl border border-red-100">
+                              {authError}
+                          </div>
+                      )}
+
+                      <div className="space-y-4 pt-2">
+                          <button 
+                              onClick={() => { setWalletConnected(true); setShowModal(false); }}
+                              className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl border-2 border-slate-200 hover:border-primary hover:bg-primary/5 text-slate-700 font-bold text-sm transition-all shadow-sm"
+                          >
+                              <Wallet className="w-5 h-5 text-slate-500" />
+                              Log in with Hedera Wallet
+                          </button>
+
+                          <div className="relative py-2">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
+                            <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-white px-4 text-slate-400">or</span></div>
+                          </div>
+
+                          <div className="flex justify-center w-full">
+                              <GoogleLogin
+                                  onSuccess={handleGoogleSuccess}
+                                  onError={() => setAuthError('Google Auth failed')}
+                                  useOneTap={false}
+                                  shape="rectangular"
+                                  theme="outline"
+                                  size="large"
+                                  width="100%"
+                              />
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      )}
 
       <main className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full space-y-10">
         {/* Summary Cards */}
@@ -202,7 +325,7 @@ const App = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Deliveries Table */}
           <section className="lg:col-span-2 space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="bg-slate-100 p-2 rounded-lg">
                   <History className="text-slate-600 w-5 h-5" />
@@ -213,6 +336,9 @@ const App = () => {
                 View All <ArrowUpRight className="w-4 h-4" />
               </button>
             </div>
+            
+            {/* Inject NewDeliveryForm Here */}
+            <NewDeliveryForm token={token} />
 
             <div className="glass rounded-[2rem] overflow-hidden">
               <table className="w-full text-left">
