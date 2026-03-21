@@ -7,23 +7,10 @@ async function loadMarketplace() {
   // m² reforested is a placeholder / future metric
 
   try {
-    if (GuardianAPI.isLoggedIn()) {
-      const supply = await HederaMirror.getEggocoinSupply();
-      // Estimate water savings from total EGGOCOIN minted (1 EGO ≈ 1 kg waste)
-      const wasteKg = supply.totalSupply;
-      const h2oLiters = wasteKg * 8.9;
-
-      if (h2oLiters >= 1000) {
-        UI.setText('stat-h2o', `${(h2oLiters / 1000).toFixed(1)}k`);
-      } else {
-        UI.setText('stat-h2o', UI.fmt(h2oLiters, 0));
-      }
-    } else {
-      // Show estimated values even without login (public Hedera data)
-      const supply = await HederaMirror.getEggocoinSupply();
-      const h2oLiters = supply.totalSupply * 8.9;
-      UI.setText('stat-h2o', `${UI.fmt(h2oLiters, 0)}`);
-    }
+    // Public Hedera API — no login required
+    const supply = await HederaMirror.getEggocoinSupply();
+    const h2oLiters = supply.totalSupply * 8.9;
+    UI.setText('stat-h2o', h2oLiters >= 1000 ? `${(h2oLiters / 1000).toFixed(1)}k` : UI.fmt(h2oLiters, 0));
   } catch (e) {
     console.error('Marketplace stats error:', e);
     UI.setText('stat-h2o', '1,202');

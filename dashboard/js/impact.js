@@ -2,8 +2,6 @@
 // Loads: aggregate score, CO2 avoidance, waste chart, milestones
 
 async function loadImpact() {
-  if (!GuardianAPI.isLoggedIn()) return;
-
   UI.showLoading('aggregate-score');
   UI.showLoading('co2-tonnes');
   UI.showLoading('methane-pct');
@@ -14,6 +12,8 @@ async function loadImpact() {
   try {
     const supply = await HederaMirror.getEggocoinSupply();
     UI.setText('total-minted', `${UI.fmt(supply.totalSupply)} EGGOCOIN minted`);
+    // Update EGGOCOIN milestone with live supply
+    UI.setText('ms-eggocoin-detail', `${UI.fmt(supply.totalSupply)} EGGOCOIN from verified deliveries`);
   } catch (e) {
     console.error('Supply error:', e);
   }
@@ -75,8 +75,14 @@ async function loadImpact() {
     UI.setText('methane-pct', '72%');
     UI.setText('supply-pct', '28%');
 
+    // Update NFT milestone with actual kg
+    const nftDetail = document.getElementById('ms-nft-detail');
+    if (nftDetail && totalKg >= 1000) {
+      nftDetail.textContent = `${UI.fmt(totalKg, 1)} kg processed — exceeded 1,000 kg threshold`;
+    }
+
     // Waste chart bars
-    renderWasteChart(deliveryBars, totalKg);
+    renderWasteChart(deliveryBars);
 
   } catch (e) {
     console.error('Guardian impact error:', e);
@@ -99,7 +105,7 @@ function extractDocs(blockData) {
   return [];
 }
 
-function renderWasteChart(bars, maxKg) {
+function renderWasteChart(bars) {
   const container = document.getElementById('waste-chart');
   const labels = document.getElementById('waste-chart-labels');
   if (!container) return;
@@ -118,11 +124,11 @@ function renderWasteChart(bars, maxKg) {
       <div class="border-t border-primary"></div>
     </div>
     <div class="w-full h-full flex items-end gap-3">
-      ${bars.map(b => {
+      ${bars.map((b, i) => {
         const pct = (b.kg / maxVal) * 100;
         const color = b.approved ? 'bg-primary' : 'bg-error/60';
         return `
-          <div class="flex-1 ${color} rounded-t-lg transition-all hover:opacity-80 relative group" style="height: ${Math.max(pct, 5)}%">
+          <div class="flex-1 ${color} rounded-t-lg transition-all hover:opacity-80 relative group bar-grow" style="height: ${Math.max(pct, 5)}%; animation-delay: ${i * 0.08}s">
             <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
               ${b.id}: ${b.kg}kg ${b.approved ? '✓' : '✗'}
             </div>
@@ -154,13 +160,12 @@ function renderFallbackChart() {
     { id: 'ENT-009', kg: 350, kgAdj: 238, approved: true },
     { id: 'ENT-010', kg: 290, kgAdj: 198.8, approved: true },
   ];
-  renderWasteChart(fallback, 1801);
+  renderWasteChart(fallback);
 }
 
 function onLogin() {
   loadImpact();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (GuardianAPI.isLoggedIn()) loadImpact();
-});
+// Load global impact data for all visitors (no login required)
+document.addEventListener('DOMContentLoaded', () => loadImpact());

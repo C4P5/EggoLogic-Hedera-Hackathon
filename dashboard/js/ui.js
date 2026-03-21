@@ -65,6 +65,8 @@ const UI = (() => {
       await GuardianAPI.login(email, password);
       closeLogin();
       updateAuthUI();
+      const user = GuardianAPI.currentUser();
+      showToast(`Signed in as ${user.role || 'User'}`);
       // Trigger page-specific data load
       if (typeof onLogin === 'function') onLogin();
     } catch (e) {
@@ -110,7 +112,10 @@ const UI = (() => {
    */
   function setText(id, value) {
     const el = document.getElementById(id);
-    if (el) el.textContent = value;
+    if (el) {
+      el.textContent = value;
+      el.classList.add('fade-in');
+    }
   }
 
   /**
@@ -256,7 +261,25 @@ const UI = (() => {
     `).join('');
   }
 
-  return { init, initLoginModal, openLogin, closeLogin, doLogin, updateAuthUI, setText, setHTML, showLoading, showSkeletonRows, fmt, timeAgo };
+  /**
+   * Show a toast notification.
+   */
+  function showToast(message) {
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'app-toast';
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    requestAnimationFrame(() => {
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    });
+  }
+
+  return { init, initLoginModal, openLogin, closeLogin, doLogin, updateAuthUI, setText, setHTML, showLoading, showSkeletonRows, showToast, fmt, timeAgo };
 })();
 
 // Auto-init on DOM ready

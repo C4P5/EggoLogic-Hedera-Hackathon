@@ -3,6 +3,11 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Eggologic Marketplace</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cellipse cx='50' cy='55' rx='35' ry='42' fill='%2310381E'/%3E%3Cellipse cx='50' cy='52' rx='26' ry='32' fill='%23C1EDC7'/%3E%3C/svg%3E"/>
+<meta property="og:title" content="Eggologic — Marketplace"/>
+<meta property="og:description" content="Redeem EGGOCOIN tokens for regenerative products, composting equipment, and partner restaurant deals."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://c4p5.github.io/EggoLogic-Hedera-Hackathon/marketplace.html"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -79,9 +84,9 @@
     </div>
     <div class="flex gap-3 overflow-x-auto pb-4">
       <span class="px-6 py-2.5 rounded-full bg-white text-primary font-bold text-sm whitespace-nowrap shadow-sm cursor-pointer">All Resources</span>
-      <span class="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-medium text-sm whitespace-nowrap hover:bg-white/20 transition-colors cursor-pointer">Eggs</span>
-      <span class="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-medium text-sm whitespace-nowrap hover:bg-white/20 transition-colors cursor-pointer">Compost</span>
-      <span class="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-medium text-sm whitespace-nowrap hover:bg-white/20 transition-colors cursor-pointer">Restaurants</span>
+      <a onclick="smoothScroll('card-eggs')" class="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-medium text-sm whitespace-nowrap hover:bg-white/20 transition-colors cursor-pointer no-underline">Eggs</a>
+      <a onclick="smoothScroll('card-compost')" class="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-medium text-sm whitespace-nowrap hover:bg-white/20 transition-colors cursor-pointer no-underline">Compost</a>
+      <a onclick="smoothScroll('card-restaurants')" class="px-6 py-2.5 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-white font-medium text-sm whitespace-nowrap hover:bg-white/20 transition-colors cursor-pointer no-underline">Restaurants</a>
     </div>
   </div>
 </div>
@@ -91,7 +96,7 @@
 <!-- Marketplace Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
   <!-- Large Feature Card -->
-  <div class="lg:col-span-2 relative group overflow-hidden rounded-3xl bg-white shadow-xl">
+  <div id="card-restaurants" class="lg:col-span-2 relative group overflow-hidden rounded-3xl bg-white shadow-xl">
     <div class="relative h-[360px] md:h-[480px] overflow-hidden bg-gradient-to-br from-[#10381E] to-[#284f33] flex items-center justify-center">
       <!-- Decorative pattern -->
       <div class="absolute inset-0 opacity-10">
@@ -110,15 +115,14 @@
       <div class="absolute bottom-6 md:bottom-10 left-6 md:left-10 right-6 md:right-10">
         <span class="inline-block px-3 py-1 rounded-full bg-[#FBD54E] text-primary text-[10px] font-bold uppercase tracking-widest mb-4">Featured Tier</span>
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-6">
-          <button class="px-8 py-3.5 rounded-full bg-white text-primary font-bold hover:bg-[#C1EDC7] transition-all shadow-lg">Explore Venues</button>
-          <span class="font-headline italic text-xl md:text-2xl text-white">From 450 EC / yr</span>
+          <button onclick="UI.showToast('Coming soon')" class="px-8 py-3.5 rounded-full bg-white text-primary font-bold hover:bg-[#C1EDC7] transition-all shadow-lg">Explore Venues</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Product Card 1: Compost -->
-  <div class="premium-card rounded-3xl overflow-hidden flex flex-col h-full">
+  <div id="card-compost" class="premium-card rounded-3xl overflow-hidden flex flex-col h-full">
     <div class="h-56 md:h-64 overflow-hidden relative bg-gradient-to-br from-[#284f33] to-[#386846] flex items-center justify-center">
       <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(circle at 30% 70%, white 1px, transparent 1px), radial-gradient(circle at 70% 30%, white 1px, transparent 1px); background-size: 24px 24px;"></div>
       <div class="relative flex flex-col items-center gap-3">
@@ -130,12 +134,12 @@
     </div>
     <div class="p-6 md:p-8 flex-1 flex flex-col">
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">Regenerative Compost</h3>
-        <span class="font-bold text-primary bg-[#C1EDC7]/20 px-2 py-0.5 rounded-full text-sm">85 EC</span>
+        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">EGGOLOGIC Compost</h3>
+        <span class="font-bold text-primary bg-[#C1EDC7]/20 px-2 py-0.5 rounded-full text-sm">96 $EGGO</span>
       </div>
-      <p class="text-on-surface-variant text-sm mb-8 leading-relaxed">A+ quality compost, extremely high in organic nutrients from EGGOLOGIC's composting chain.</p>
+      <p class="text-on-surface-variant text-sm mb-8 leading-relaxed">All natural, A+ quality compost. High in organic nutrients from EGGOLOGIC's composting chain.</p>
       <div class="mt-auto">
-        <button class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Add to Estate</button>
+        <button onclick="UI.showToast('Coming soon')" class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Get it now</button>
       </div>
     </div>
   </div>
@@ -153,12 +157,12 @@
     </div>
     <div class="p-6 md:p-8 flex-1 flex flex-col">
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">Organic Waste Bins</h3>
-        <span class="font-bold text-primary bg-[#C1EDC7]/20 px-2 py-0.5 rounded-full text-sm">120 EC</span>
+        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">MICROLOGIC Bins</h3>
+        <span class="font-bold text-primary bg-[#C1EDC7]/20 px-2 py-0.5 rounded-full text-sm">444 $EGGO</span>
       </div>
-      <p class="text-on-surface-variant text-sm mb-8 leading-relaxed">Automated aerobic composting systems with integrated sensor arrays.</p>
+      <p class="text-on-surface-variant text-sm mb-8 leading-relaxed">Automated aerobic composting smart systems. Each Bin is production ready, blockchain connected and comes with BSF Larvaes as composting agents</p>
       <div class="mt-auto">
-        <button class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Add to Estate</button>
+        <button onclick="UI.showToast('Coming soon')" class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Get it now</button>
       </div>
     </div>
   </div>
@@ -171,40 +175,40 @@
         <div class="w-20 h-20 rounded-2xl bg-[#C1EDC7]/15 border border-[#C1EDC7]/20 flex items-center justify-center backdrop-blur-sm">
           <span class="material-symbols-outlined text-[#C1EDC7] text-4xl">sensors</span>
         </div>
-        <span class="text-[#C1EDC7]/60 text-[10px] font-bold uppercase tracking-widest">Precision Ag</span>
+        <span class="text-[#C1EDC7]/60 text-[10px] font-bold uppercase tracking-widest">GREEN CERT</span>
       </div>
     </div>
     <div class="p-6 md:p-8 flex-1 flex flex-col">
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">Soil Health Sensors</h3>
-        <span class="font-bold text-primary bg-[#C1EDC7]/20 px-2 py-0.5 rounded-full text-sm">210 EC</span>
+        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">Zero-Waste Certification</h3>
+        <span class="font-bold text-primary bg-[#C1EDC7]/20 px-2 py-0.5 rounded-full text-sm">999 $EGGO</span>
       </div>
-      <p class="text-on-surface-variant text-sm mb-8 leading-relaxed">Real-time pH, Nitrogen, and Moisture tracking with mobile dashboard link.</p>
+      <p class="text-on-surface-variant text-sm mb-8 leading-relaxed">For business only. Make your Restaurant carbon-neutral and get a zero-waste certification.</p>
       <div class="mt-auto">
-        <button class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Add to Estate</button>
+        <button onclick="UI.showToast('Coming soon')" class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Contact us</button>
       </div>
     </div>
   </div>
 
   <!-- Product Card 4: Eggs -->
-  <div class="premium-card rounded-3xl overflow-hidden flex flex-col h-full">
+  <div id="card-eggs" class="premium-card rounded-3xl overflow-hidden flex flex-col h-full">
     <div class="h-56 md:h-64 overflow-hidden relative bg-gradient-to-br from-[#DCC49C]/30 to-[#F5F3E8] flex items-center justify-center">
       <div class="absolute inset-0 opacity-[0.07]" style="background-image: radial-gradient(circle at 30% 70%, #10381E 1px, transparent 1px), radial-gradient(circle at 70% 30%, #10381E 1px, transparent 1px); background-size: 24px 24px;"></div>
       <div class="relative flex flex-col items-center gap-3">
         <div class="w-20 h-20 rounded-2xl bg-[#10381E]/8 border border-[#10381E]/10 flex items-center justify-center">
           <span class="material-symbols-outlined text-[#10381E]/40 text-4xl">egg</span>
         </div>
-        <span class="text-[#10381E]/40 text-[10px] font-bold uppercase tracking-widest">Free Range</span>
+        <span class="text-[#C1EDC7]/40 text-[10px] font-bold uppercase tracking-widest">Free Range</span>
       </div>
     </div>
     <div class="p-6 md:p-8 flex-1 flex flex-col">
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">EGGOLOGIC EGGS</h3>
-        <span class="font-bold text-primary bg-[#DCC49C]/30 px-2 py-0.5 rounded-full text-sm">65 EC</span>
+        <h3 class="font-headline text-xl md:text-2xl font-medium text-primary">EGGOLOGIC Eggs</h3>
+        <span class="font-bold text-primary bg-[#DCC49C]/30 px-2 py-0.5 rounded-full text-sm">69 $EGGO</span>
       </div>
       <p class="text-on-surface-variant text-sm mb-8 leading-relaxed">Fresh, free-range, premium quality eggs made in our regenerative facilities.</p>
       <div class="mt-auto">
-        <button class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Add to Estate</button>
+        <button onclick="UI.showToast('Coming soon')" class="w-full py-4 rounded-full bg-primary text-white font-bold hover:bg-secondary transition-all shadow-sm hover:shadow-md">Get it now</button>
       </div>
     </div>
   </div>
@@ -215,16 +219,16 @@
   <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
     <div class="max-w-md">
       <h2 class="font-headline text-4xl text-white font-medium mb-4">Support Local Ecosystems</h2>
-      <p class="text-white/70 text-lg">Every token is always bonded to 1kg of composted waste. We encourage people to help the planet and get rewards for it. That's ReFi. That's our <span class="text-[#FBD54E] font-bold italic">LOGIC.</span></p>
+      <p class="text-white/70 text-lg">Every token always represents 1kg of composted waste. We encourage people to help our planet and get rewarded for it. That's ReFi. That's our <span class="text-[#FBD54E] font-bold italic">LOGIC.</span></p>
     </div>
     <div class="flex gap-6">
       <div class="p-8 bg-white/5 backdrop-blur-xl rounded-2xl text-center border border-white/10 min-w-[160px]">
         <div id="stat-h2o" class="text-[#C1EDC7] font-headline text-4xl mb-1">—</div>
-        <div class="text-white/60 text-[10px] uppercase tracking-widest font-bold">Liters H2O Saved</div>
+        <div class="text-white/60 text-[10px] uppercase tracking-widest font-bold">Restaurants Joined</div>
       </div>
       <div class="p-8 bg-white/5 backdrop-blur-xl rounded-2xl text-center border border-white/10 min-w-[160px]">
         <div id="stat-reforested" class="text-[#C1EDC7] font-headline text-4xl mb-1">—</div>
-        <div class="text-white/60 text-[10px] uppercase tracking-widest font-bold">m² Reforested</div>
+        <div class="text-white/60 text-[10px] uppercase tracking-widest font-bold">Kilograms Composted</div>
       </div>
     </div>
   </div>
@@ -234,44 +238,68 @@
 
 <!-- Footer -->
 <footer class="bg-surface-container-low py-20 px-10 border-t border-stone-200/50">
-<div class="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-start gap-12">
+<div class="max-w-screen-2xl mx-auto flex flex-col md:flex-row justify-between items-start gap-16">
   <div class="max-w-md">
-    <span class="text-2xl font-headline font-bold text-primary mb-6 block">Eggologic</span>
-    <p class="text-on-surface-variant text-sm leading-relaxed mb-8">We are building the infrastructure for a regenerative future.</p>
+    <div class="flex items-center gap-2 mb-8">
+      <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+        <span class="material-symbols-outlined text-[18px] text-white">egg</span>
+      </div>
+      <span class="text-2xl font-bold text-primary tracking-tight">Eggologic</span>
+    </div>
+    <p class="text-on-surface-variant text-sm leading-relaxed mb-10">We are building the infrastructure for a regenerative future. By closing the loop on organic waste recollection from Restaurants; we create value for the Earth and investors alike</p>
   </div>
-  <div class="grid grid-cols-2 md:grid-cols-3 gap-16">
+  <div class="grid grid-cols-2 md:grid-cols-3 gap-20">
     <div>
-      <h6 class="font-bold text-primary text-[10px] uppercase tracking-widest mb-6">Platform</h6>
+      <h6 class="font-bold text-primary text-xs uppercase tracking-[0.2em] mb-8">Platform</h6>
       <ul class="space-y-4 text-sm text-on-surface-variant font-medium">
         <li><a href="index.html">Dashboard</a></li><li><a href="impact.html">Impact Report</a></li><li><a href="marketplace.html">Marketplace</a></li>
       </ul>
     </div>
     <div>
-      <h6 class="font-bold text-primary text-[10px] uppercase tracking-widest mb-6">Company</h6>
+      <h6 class="font-bold text-primary text-xs uppercase tracking-[0.2em] mb-8">Company</h6>
       <ul class="space-y-4 text-sm text-on-surface-variant font-medium">
         <li><a href="#">About Us</a></li><li><a href="#">Partners</a></li><li><a href="#">Contact</a></li>
       </ul>
     </div>
     <div>
-      <h6 class="font-bold text-primary text-[10px] uppercase tracking-widest mb-6">Legal</h6>
+      <h6 class="font-bold text-primary text-xs uppercase tracking-[0.2em] mb-8">Legal</h6>
       <ul class="space-y-4 text-sm text-on-surface-variant font-medium">
         <li><a href="#">Privacy</a></li><li><a href="#">Terms</a></li><li><a href="#">Security</a></li>
       </ul>
     </div>
   </div>
 </div>
-<div class="max-w-screen-2xl mx-auto border-t border-stone-200/50 mt-16 pt-8 text-center text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
-    &copy; 2026 Eggologic Sustainable Estates. All Rights Reserved.
+<div class="max-w-screen-2xl mx-auto border-t border-stone-200/50 mt-20 pt-10 text-center text-[10px] text-on-surface-variant font-bold uppercase tracking-[0.3em]">
+    &copy; 2026 Eggologic Regenerative Finance. ALL RIGHTS RESERVED.
 </div>
 </footer>
 
 <!-- Floating Cart FAB -->
 <div class="fixed bottom-10 right-10 z-50">
-  <button class="h-16 w-16 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all active:scale-95 group">
+  <button onclick="UI.showToast('Coming soon')" class="h-16 w-16 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-all active:scale-95 group">
     <span class="material-symbols-outlined text-3xl group-hover:rotate-12 transition-transform">shopping_cart</span>
   </button>
 </div>
 
+<script>
+function smoothScroll(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = window.scrollY;
+  const end = el.getBoundingClientRect().top + start - 32;
+  const dist = end - start;
+  const duration = 1200;
+  let t0 = null;
+  function step(ts) {
+    if (!t0) t0 = ts;
+    const p = Math.min((ts - t0) / duration, 1);
+    const ease = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+    window.scrollTo(0, start + dist * ease);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+</script>
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/hedera.js"></script>

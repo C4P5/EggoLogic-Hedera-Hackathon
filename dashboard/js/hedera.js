@@ -37,6 +37,7 @@ const HederaMirror = (() => {
       name: info.name,
       symbol: info.symbol,
       decimals: parseInt(info.decimals, 10),
+      createdTimestamp: parseFloat(info.created_timestamp) * 1000,
     };
   }
 
@@ -87,6 +88,34 @@ const HederaMirror = (() => {
   }
 
   /**
+   * Get CIT (Circular Impact NFT) total supply.
+   */
+  async function getCITSupply() {
+    const info = await getTokenInfo(CONFIG.NFT_TOKEN);
+    return parseInt(info.total_supply, 10);
+  }
+
+  /**
+   * Get CIT NFT count for a specific account.
+   */
+  async function getUserCIT(accountId) {
+    const nfts = await getNFTs(accountId);
+    return nfts.length;
+  }
+
+  /**
+   * Get all minted CIT NFTs (serial, holder, timestamp).
+   */
+  async function getAllCITNfts() {
+    const data = await _get(`/api/v1/tokens/${CONFIG.NFT_TOKEN}/nfts?order=desc&limit=25`);
+    return (data.nfts || []).map(nft => ({
+      serial: nft.serial_number,
+      account: nft.account_id,
+      timestamp: parseFloat(nft.created_timestamp) * 1000,
+    }));
+  }
+
+  /**
    * Get all minting events for EGGOCOIN (treasury transfers).
    */
   async function getMintEvents() {
@@ -106,5 +135,8 @@ const HederaMirror = (() => {
     getAllBalances,
     getNFTs,
     getMintEvents,
+    getCITSupply,
+    getUserCIT,
+    getAllCITNfts,
   };
 })();

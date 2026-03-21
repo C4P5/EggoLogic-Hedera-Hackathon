@@ -171,5 +171,48 @@ const GuardianAPI = (() => {
     localStorage.removeItem(STORAGE_KEY);
   }
 
-  return { login, getToken, get, getBlockData, isLoggedIn, currentUser, logout };
+  /**
+   * Generic authenticated POST to Guardian API.
+   */
+  async function post(path, body) {
+    const token = await getToken();
+    const res = await fetch(`${CONFIG.GUARDIAN_URL}${path}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    if (res.status === 401) {
+      const auth = _loadAuth();
+      auth.ts = 0;
+      _saveAuth(auth);
+      const newToken = await getToken();
+      const retry = await fetch(`${CONFIG.GUARDIAN_URL}${path}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${newToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+      if (!retry.ok) throw new Error(`Guardian POST ${path}: ${retry.status}`);
+      return retry.json();
+    }
+    if (!res.ok) throw new Error(`Guardian POST ${path}: ${res.status}`);
+    return res.json();
+  }
+
+  /**
+   * Submit a waste delivery document to the Guardian policy.
+   */
+  async function submitDelivery(doc) {
+    return post(`/policies/${CONFIG.POLICY_ID}/blocks/${CONFIG.BLOCKS.PP_DELIVERY_FORM}`, {
+      document: doc,
+      ref: null,
+    });
+  }
+
+  return { login, getToken, get, post, getBlockData, isLoggedIn, currentUser, logout, submitDelivery };
 })();

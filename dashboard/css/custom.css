@@ -139,3 +139,29 @@
 .mobile-menu-panel a.nav-active::after {
   display: none;
 }
+
+/* Fade-in animation for data load */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Chart bar grow-up entrance */
+@keyframes growUp {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+.bar-grow {
+  transform-origin: bottom;
+  animation: growUp 0.7s ease-out forwards;
+}
+
+/* Print styles for Impact Report */
+@media print {
+  nav, #auth-btn, footer, .no-print, .mobile-menu-overlay, .mobile-menu-panel, #hamburger-btn { display: none !important; }
+  .hero-curved-bg { border-radius: 0 !important; }
+  body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

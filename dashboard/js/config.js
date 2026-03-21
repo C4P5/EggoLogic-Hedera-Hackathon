@@ -17,6 +17,7 @@ const CONFIG = {
     VVB_IMPACT_CALC: 'a77f0551-9cce-41c9-889d-c7b1110c059e',
     TOKEN_HISTORY:   'cd9ed4c2-ff79-474c-bd7c-6a9c525c6035',
     REGISTRY_SUPPLIER: 'd6b1e092-59c1-48af-8671-1a5dfdeaaddb',
+    PP_DELIVERY_FORM:  'b322eaa1-7611-4704-be60-b033db83dadb',
   },
 
   // User Accounts (for demo login selector)
@@ -27,6 +28,9 @@ const CONFIG = {
     { role: 'Operator',          email: 'eggologic-operator@outlook.com', hedera: '0.0.8294659' },
     { role: 'VVB',               email: 'eggologic-vvb@outlook.com', hedera: '0.0.8294709' },
   ],
+
+  // HashScan Explorer (Testnet)
+  HASHSCAN_URL: 'https://hashscan.io/testnet',
 
   // Token expiry buffer (re-auth 2 min before expiry)
   TOKEN_TTL_MS: 28 * 60 * 1000, // 28 minutes
